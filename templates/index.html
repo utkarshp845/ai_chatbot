@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 50px; }
+        #chat { width: 300px; max-width: 100%; margin: auto; }
+        .message { margin-bottom: 10px; padding: 10px; border-radius: 5px; }
+        .user { background-color: #DCF8C6; text-align: right; }
+        .bot { background-color: #F1F0F0; }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <div id="messages"></div>
+        <textarea id="input" rows="3" style="width: 100%;"></textarea>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('input').value;
+            if (!userInput) return;
+
+            addMessage(userInput, 'user');
+            document.getElementById('input').value = '';
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userInput })
+                });
+                const data = await response.json();
+                if (data.response) {
+                    addMessage(data.response, 'bot');
+                } else {
+                    addMessage("Error: " + data.error, 'bot');
+                }
+            } catch (error) {
+                addMessage("Error: " + error.message, 'bot');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messages = document.getElementById('messages');
+            const message = document.createElement('div');
+            message.className = 'message ' + sender;
+            message.innerText = text;
+            messages.appendChild(message);
+            messages.scrollTop = messages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
